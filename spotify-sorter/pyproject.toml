@@ -8,7 +8,7 @@ authors = ["Furkan Ozdemir <f.ozdemir40@hotmail.com>"]
 python = "^3.9"
 Flask = "^2.0.3"
 spotipy = "^2.19.0"
-decouple = "^0.0.7"
+python-decouple = "^3.6"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
