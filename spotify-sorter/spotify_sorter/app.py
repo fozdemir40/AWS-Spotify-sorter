@@ -2,6 +2,7 @@ from flask import Flask, request, render_template
 from decouple import config
 from spotipy import oauth2
 import spotipy
+import json
 
 app = Flask(__name__, template_folder='./templates')
 
@@ -30,7 +31,7 @@ def index():
 
     if access_token:
         sp = spotipy.Spotify(access_token)
-        results = sp.current_user()
+        results = sp.current_user_saved_tracks(limit=50, offset=0, market="NL")
         return render_template('index.html', results=results)
 
     else:

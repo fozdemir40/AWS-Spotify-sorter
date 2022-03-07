@@ -14,7 +14,21 @@
     {% endif %}
 
     {% if results %}
-        <p>Access authorized!</p>
+        <div class="liked-songs-container">
+            {% for result in results["items"] %}
+                <div class="track-container">
+                    <div class="track-image"><img src="{{ result['track']['album']['images'][2]['url'] }}" alt="Album image"></div>
+                    <div class="track-title"><p>{{ result['track']['name'] }}</p></div>
+                    <div class="track-artist"><p>{{ result['track']['artists'][0]['name'] }}</p></div>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="process-button-container">
+            <button class="process-btn">Process</button>
+        </div>
+
+
+
     {% endif %}
 </body>
 </html>
