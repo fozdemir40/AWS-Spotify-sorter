@@ -9,7 +9,12 @@
     <title>Spotify sorter</title>
 </head>
 <body>
+    {% if a_url %}
+        <a href="{{ a_url }}">Login</a>
+    {% endif %}
 
-
+    {% if results %}
+        <p>Access authorized!</p>
+    {% endif %}
 </body>
 </html>

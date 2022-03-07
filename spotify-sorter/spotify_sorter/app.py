@@ -1,18 +1,19 @@
 from flask import Flask, request, render_template
+from decouple import config
 from spotipy import oauth2
 import spotipy
 
 app = Flask(__name__, template_folder='./templates')
 
-SPOTIPY_CLIENT_ID = ''
-SPOTIPY_CLIENT_SECRET = ''
+SPOTIPY_CLIENT_ID = config('SPOTIPY_CLIENT_ID', default='')
+SPOTIPY_CLIENT_SECRET = config('SPOTIPY_CLIENT_SECRET', default='')
 SPOTIPY_REDIRECT_URI = 'http://127.0.0.1:5000/'
 SCOPE = 'user-library-read'
 CACHE = '.spotipyoauthcache'
 sp_oauth = oauth2.SpotifyOAuth(SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET, SPOTIPY_REDIRECT_URI, scope=SCOPE,
                                cache_path=CACHE)
 
-app.route('/')
+@app.route('/')
 def index():
     access_token = ""
 
@@ -30,15 +31,12 @@ def index():
     if access_token:
         sp = spotipy.Spotify(access_token)
         results = sp.current_user()
-        return results
+        return render_template('index.html', results=results)
 
     else:
-        return login_view()
+        auth_url = get_spoauth_uri()
+        return render_template('index.html', a_url=auth_url)
 
-
-def login_view():
-    auth_url = get_spoauth_uri()
-    return render_template('index.html', a_url=auth_url)
 
 
 def get_spoauth_uri():
