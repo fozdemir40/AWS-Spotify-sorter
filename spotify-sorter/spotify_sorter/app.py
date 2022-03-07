@@ -2,7 +2,6 @@ from flask import Flask, request, render_template
 from decouple import config
 from spotipy import oauth2
 import spotipy
-import json
 
 app = Flask(__name__, template_folder='./templates')
 
@@ -38,6 +37,9 @@ def index():
         auth_url = get_spoauth_uri()
         return render_template('index.html', a_url=auth_url)
 
+@app.route("/processing", methods=['POST'])
+def process_tracks():
+    return render_template('process_tracks.html')
 
 
 def get_spoauth_uri():
