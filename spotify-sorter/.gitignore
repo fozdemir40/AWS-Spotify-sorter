@@ -1,4 +1,4 @@
 ../.idea/
 poetry.lock
 .spotipyoauthcache
-.spotify-sorter/spotify_sorter/.env
+./spotify_sorter/.env
