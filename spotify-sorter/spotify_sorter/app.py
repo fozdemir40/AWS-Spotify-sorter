@@ -8,7 +8,7 @@ app = Flask(__name__, template_folder='./templates')
 SPOTIPY_CLIENT_ID = config('SPOTIPY_CLIENT_ID', default='')
 SPOTIPY_CLIENT_SECRET = config('SPOTIPY_CLIENT_SECRET', default='')
 SPOTIPY_REDIRECT_URI = 'http://127.0.0.1:5000/'
-SCOPE = 'user-library-read'
+SCOPE = 'user-library-read ugc-image-upload'
 CACHE = '.spotipyoauthcache'
 sp_oauth = oauth2.SpotifyOAuth(SPOTIPY_CLIENT_ID, SPOTIPY_CLIENT_SECRET, SPOTIPY_REDIRECT_URI, scope=SCOPE,
                                cache_path=CACHE)
@@ -37,7 +37,8 @@ def index():
         auth_url = get_spoauth_uri()
         return render_template('index.html', a_url=auth_url)
 
-@app.route("/processing", methods=['POST'])
+
+@app.route("/processed", methods=['POST'])
 def process_tracks():
     return render_template('process_tracks.html')
 
