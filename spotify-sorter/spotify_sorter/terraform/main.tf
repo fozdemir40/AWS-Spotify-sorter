@@ -69,7 +69,7 @@ resource "aws_cloudwatch_log_group" "spotify_sorter" {
 }
 
 resource "aws_iam_role" "lambda_exec" { # Defines the IAM role that allows lambda to access resources in AWS account
-  name = "serverless_lambda"
+  name = "spotify_lambda"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -91,14 +91,14 @@ resource "aws_iam_role_policy_attachment" "lambda_policy" { # Attaches a policy 
 }
 
 resource "aws_apigatewayv2_api" "lambda" { # Creates API Gateway, sets name and protocol
-  name          = "serverless_lambda_gw"
+  name          = "spotify_lambda_gw"
   protocol_type = "HTTP"
 }
 
 resource "aws_apigatewayv2_stage" "lambda" { # For settings stages in api gateway
   api_id = aws_apigatewayv2_api.lambda.id
 
-  name        = "serverless_lambda_stage"
+  name        = "spotify_lambda_stage"
   auto_deploy = true
 
   access_log_settings { # with access logging enabled
