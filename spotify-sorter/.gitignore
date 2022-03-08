@@ -8,7 +8,7 @@ spotify_sorter/.env
 /spotify_sorter/terraform/terraform.tfstate.backup
 /spotify_sorter/terraform/python/
 /spotify_sorter/terraform/terraform.tfstate
-/spotify_sorter/terraform/spotify_lambda/requirements.txt
-/spotify_sorter/terraform/spotify_lambda/python/
+/spotify_sorter/terraform/spotify_lambda/*
+!/spotify_sorter/terraform/spotify_lambda/main.py
 .DS_Store
 /spotify-sorter/__pycache__/
