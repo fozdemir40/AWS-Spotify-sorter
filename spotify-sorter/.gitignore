@@ -5,3 +5,10 @@ spotify_sorter/.env
 *.zip
 /spotify_sorter/terraform/.terraform/
 /spotify_sorter/terraform/.terraform.lock.hcl
+/spotify_sorter/terraform/terraform.tfstate.backup
+/spotify_sorter/terraform/python/
+/spotify_sorter/terraform/terraform.tfstate
+/spotify_sorter/terraform/spotify_lambda/requirements.txt
+/spotify_sorter/terraform/spotify_lambda/python/
+.DS_Store
+/spotify-sorter/__pycache__/

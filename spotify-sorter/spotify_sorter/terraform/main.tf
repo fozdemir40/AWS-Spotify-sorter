@@ -1,151 +1,128 @@
 terraform {
   required_providers {
     aws = {
-      source  = "hashicorp/aws"
-      version = "~> 4.0.0"
-    }
-    random = {
-      source  = "hashicorp/random"
-      version = "~> 3.1.0"
-    }
-    archive = {
-      source  = "hashicorp/archive"
-      version = "~> 2.2.0"
+      source = "hashicorp/aws"
+      version = "~> 3.8"
     }
   }
-
-  required_version = "~> 1.0"
 }
 
-provider "aws" { # The provider for this terraform application
-  region = var.aws_region
+provider "aws" {
+  region = var.region
 }
 
-resource "random_pet" "lambda_bucket_name" { # random_pet = generated a random pet name
-  prefix = "spotify-sorter" # The string before random pet name
-  length = 4 # Length of pet name
-}
+data aws_iam_policy_document assume_role{
+  statement {
+    effect = "Allow"
+    actions = ["sts:AssumeRole"]
 
-resource "aws_s3_bucket" "lambda_bucket" {
-  bucket = random_pet.lambda_bucket_name.id # Set the bucket with created name
-
-  force_destroy = true
-}
-
-data "archive_file" "lambda_app"{ # Uploads the compiled application to the bucket.
-  type = "zip"
-
-  source_dir = "${path.module}/spotify_lambda"  # The source for function
-  output_path = "${path.module}/spotify_lambda.zip" #  The output for function
-}
-
-resource "aws_s3_object" "lambda_app" {
-  bucket = aws_s3_bucket.lambda_bucket.id
-
-  key = "spotify_lambda.zip"
-  source = data.archive_file.lambda_app.output_path
-
-  etag = filemd5(data.archive_file.lambda_app.output_path)
-}
-
-resource "aws_lambda_function" "spotify_sorter"{  # Configures the lambda function
-  function_name = "SpotifySorter"
-
-  s3_bucket = aws_s3_bucket.lambda_bucket.id  # Uses the S3 bucket
-  s3_key = aws_s3_object.lambda_app.key
-
-  runtime = "python3.9" # The runtime
-  handler = "main.sorter" # finding the handler
-
-  source_code_hash = data.archive_file.lambda_app.output_base64sha256 #  This defines if the code has changed. which lets lambda know if there is a new version
-
-  role = aws_iam_role.lambda_exec.arn # Grants the function permissions.
-}
-
-resource "aws_cloudwatch_log_group" "spotify_sorter" {
-  name = "/aws/lambda/${aws_lambda_function.spotify_sorter.function_name}" #  Location for log space
-
-  retention_in_days = 30 #  Deletes the logs after 30 days.
-}
-
-resource "aws_iam_role" "lambda_exec" { # Defines the IAM role that allows lambda to access resources in AWS account
-  name = "spotify_lambda"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Action = "sts:AssumeRole"
-      Effect = "Allow"
-      Sid    = ""
-      Principal = {
-        Service = "lambda.amazonaws.com"
-      }
-      }
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "lambda_policy" { # Attaches a policy IAM role.
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole" # This specific role is an AWS managed policy that allows Lambda to write to CloudWatch
-  role       = aws_iam_role.lambda_exec.name
-}
-
-resource "aws_apigatewayv2_api" "lambda" { # Creates API Gateway, sets name and protocol
-  name          = "spotify_lambda_gw"
-  protocol_type = "HTTP"
-}
-
-resource "aws_apigatewayv2_stage" "lambda" { # For settings stages in api gateway
-  api_id = aws_apigatewayv2_api.lambda.id
-
-  name        = "spotify_lambda_stage"
-  auto_deploy = true
-
-  access_log_settings { # with access logging enabled
-    destination_arn = aws_cloudwatch_log_group.api_gw.arn
-
-    format = jsonencode({
-      requestId               = "$context.requestId"
-      sourceIp                = "$context.identity.sourceIp"
-      requestTime             = "$context.requestTime"
-      protocol                = "$context.protocol"
-      httpMethod              = "$context.httpMethod"
-      resourcePath            = "$context.resourcePath"
-      routeKey                = "$context.routeKey"
-      status                  = "$context.status"
-      responseLength          = "$context.responseLength"
-      integrationErrorMessage = "$context.integrationErrorMessage"
-      }
-    )
+    principals {
+      identifiers = toset(["lambda.amazonaws.com"])
+      type        = "Service"
+    }
   }
 }
 
-resource "aws_apigatewayv2_integration" "spotify_sorter_api" { # Configuring to let apiGateway use lambda function
-  api_id = aws_apigatewayv2_api.lambda.id
-
-  integration_uri    = aws_lambda_function.spotify_sorter.invoke_arn
-  integration_type   = "AWS_PROXY"
-  integration_method = "POST"
+resource aws_iam_role lambda{
+  name = "spotify-sorter-lambda-${var.bucket}"
+  assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
 
-resource "aws_apigatewayv2_route" "spotify_sorter" { # Maps an HTTP request to a target
-  api_id = aws_apigatewayv2_api.lambda.id
-
-  route_key = "POST /sorting" # matches any requests matching the path
-  target    = "integrations/${aws_apigatewayv2_integration.spotify_sorter_api.id}" # A target matching 'integrations/ID' maps to a Lambda integration with the given ID
+resource aws_iam_role_policy_attachment aws_lambda_cloudwatch {
+  policy_arn         = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+  role               = aws_iam_role.lambda.name
 }
 
-resource "aws_cloudwatch_log_group" "api_gw" { # Defines a log group to store access logs
-  name = "/aws/api_gw/${aws_apigatewayv2_api.lambda.name}"
-
-  retention_in_days = 30 # Deletes after 30 days
+resource aws_iam_role_policy_attachment aws_xray_write_only_access {
+  policy_arn = "arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess"
+  role       = aws_iam_role.lambda.name
 }
 
-resource "aws_lambda_permission" "api_gw" { # Gives permissions
-  statement_id  = "AllowExecutionFromAPIGateway" # Gives API Gateway permission
-  action        = "lambda:InvokeFunction" # permission to invoke Lambda function
-  function_name = aws_lambda_function.spotify_sorter.function_name # name of function
+resource aws_iam_role_policy_attachment aws_s3_access {
+  role       = aws_iam_role.lambda.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
+}
+
+module lambda {
+  source = "git::ssh://git@github.com/ConnectHolland/terraform-aws-lambda-function.git?ref=tags/0.2.1"
+
+  filename = var.lambda_file
+  bucketname = var.bucket
+  source_code_hash = filebase64sha256("./spotify_lambda/lambda.zip")
+
+  description = "Spotify sorter"
+  function_name = var.lambda_function_name
+  handler = "main.sorter"
+  role_arn = aws_iam_role.lambda.arn
+  runtime = "python3.9"
+  enable_xray = true
+
+  lambda_env_vars = {
+    BUCKET = var.bucket
+  }
+
+  role_numbers = {LMB = 1, API = 1, LOG = 1}
+  tagging_defaults = local.tagging_defaults
+}
+
+module authorizer {
+  source = "git::ssh://git@github.com/ConnectHolland/terraform-aws-lambda-function.git?ref=tags/0.2.1"
+
+  filename         = var.lambda_file
+  bucketname       = var.bucket
+  source_code_hash = filebase64sha256("./spotify_lambda/lambda.zip")
+
+  description   = "Tutorial authorizer lambda"
+  function_name = "${var.lambda_function_name}-authorizer"
+  handler       = "authorizer.sorter"
+  role_arn      = aws_iam_role.lambda.arn
+  runtime       = "python3.9"
+  enable_xray   = true
+
+  lambda_env_vars = {
+    BUCKET = var.bucket
+  }
+
+  role_numbers     = module.lambda.role_numbers
+  tagging_defaults = local.tagging_defaults
+}
+
+module api_gateway {
+  source = "git::ssh://git@github.com/ConnectHolland/terraform-aws-api-gateway.git?ref=tags/0.2.1"
+
+  description            = "Spotify sorter API"
+  name                   = "api-${var.bucket}"
+  endpoint_types         = ["REGIONAL"]
+  stage                  = "dev"
+  paths                  = ["processing"]
+  http_methods           = ["POST"]
+  lambda_invoke_arn_list = [module.lambda.invoke_arn]
+
+  CORS_allow_methods = "'OPTIONS,POST'"
+  CORS_allow_origin  = "'*'"
+
+  authorizer_type = "REQUEST"
+  authorizer_uri  = module.authorizer.invoke_arn
+  enable_xray     = true
+
+  role_numbers     = module.authorizer.role_numbers
+  tagging_defaults = local.tagging_defaults
+}
+
+resource aws_lambda_permission lambda {
+  statement_id  = "AllowMyDemoAPIInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = module.lambda.name
   principal     = "apigateway.amazonaws.com"
 
-  source_arn = "${aws_apigatewayv2_api.lambda.execution_arn}/*/*"
+  source_arn = "${module.api_gateway.execution_arn}/*/*/*"
+}
+
+resource aws_lambda_permission authorizer {
+  statement_id  = "AllowMyDemoAPIInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = module.authorizer.name
+  principal     = "apigateway.amazonaws.com"
+
+  source_arn = "${module.api_gateway.execution_arn}/*/*/*"
 }
