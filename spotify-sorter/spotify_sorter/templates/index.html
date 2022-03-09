@@ -14,9 +14,6 @@
     {% endif %}
 
     {% if results %}
-        {% if not results %}
-            <p>No songs in your liked playlist</p>
-        {% endif %}
 
         <div class="liked-songs-container">
             {% for result in results["items"] %}
@@ -37,6 +34,8 @@
             </form>
         </div>
 
+    {% else %}
+        <p>No songs in your liked playlist</p>
     {% endif %}
 </body>
 </html>
