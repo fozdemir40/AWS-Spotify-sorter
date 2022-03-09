@@ -59,6 +59,7 @@ module lambda {
 
   lambda_env_vars = {
     BUCKET = var.bucket
+    spotify_client_secret = var.spotify_client_secret
   }
 
   role_numbers = {LMB = 1, API = 1, LOG = 1}
@@ -81,6 +82,7 @@ module authorizer {
 
   lambda_env_vars = {
     BUCKET = var.bucket
+    spotify_client_secret = var.spotify_client_secret
   }
 
   role_numbers     = module.lambda.role_numbers

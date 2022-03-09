@@ -1,9 +1,10 @@
 import json
-import spotipy
 from os import getenv
+import spotipy
 
 
 def sorter(event, context):
+
         spotify_client_secret = getenv("spotify_client_secret")
         body = {
                 "message": spotify_client_secret
