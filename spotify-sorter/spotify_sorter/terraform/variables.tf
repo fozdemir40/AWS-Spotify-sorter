@@ -21,8 +21,3 @@ variable lambda_function_name {
   description = "Lambda function name"
   default = "furkan-spotify-sorter"
 }
-
-variable spotify_client_secret {
-  type = string
-  description = "Client secret for spotify app"
-}
