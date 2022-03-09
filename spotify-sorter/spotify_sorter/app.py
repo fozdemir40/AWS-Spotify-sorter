@@ -55,26 +55,26 @@ def process_tracks():
     done = False
     done_with_error = False
 
-    # if id_list:
-    #     for track_id in id_list:
-    #         data = {'spotify_access_code': token_info, 'track_id': track_id}
-    #         headers = {'X-API-Key': config('AWS_TOKEN', default='')}
-    #         response = requests.post(url=aws_endpoint, data=data, headers=headers)
-    #
-    #         if response.status_code == 200:
-    #             continue
-    #         else:
-    #             done_with_error = True
-    #             break
-    #
-    #     done = True
-    #
-    #     if done and not done_with_error:
-    #         return redirect(url_for('success_sorting'))
-    #     elif done and done_with_error:
-    #         return redirect(url_for('error_sorting'))
-    # else:
-    #     return redirect(url_for('error_sorting'))
+    if id_list:
+        for track_id in id_list:
+            data = {'spotify_access_code': token_info, 'track_id': track_id}
+            headers = {'X-API-Key': config('AWS_TOKEN', default='')}
+            response = requests.post(url=aws_endpoint, data=data, headers=headers)
+
+            if response.status_code == 200:
+                continue
+            else:
+                done_with_error = True
+                break
+
+        done = True
+
+        if done and not done_with_error:
+            return redirect(url_for('success_sorting'))
+        elif done and done_with_error:
+            return redirect(url_for('error_sorting'))
+    else:
+        return redirect(url_for('error_sorting'))
 
     return render_template('process_tracks.html')
 
