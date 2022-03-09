@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, redirect, url_for
 from decouple import config
 from spotipy import oauth2
 import requests
@@ -51,6 +51,8 @@ def process_tracks():
     aws_endpoint = config('AWS_ENDPOINT', default='')
 
     id_list = request.form.get('track_id_list')
+    done = False
+    done_with_error = False
 
     if id_list:
         for track_id in id_list:
@@ -61,11 +63,29 @@ def process_tracks():
             if response.status_code == 200:
                 continue
             else:
+                done_with_error = True
                 break
+
+        done = True
+
+        if done and not done_with_error:
+            return redirect(url_for('success_sorting'))
+        elif done and done_with_error:
+            return redirect(url_for('error_sorting'))
     else:
-        return render_template('error_page.html')
+        return redirect(url_for('error_sorting'))
 
     return render_template('process_tracks.html')
+
+
+@app.route('/success')
+def success_sorting():
+    return render_template('success_page.html')
+
+
+@app.route('/error')
+def error_sorting():
+    return render_template('error_page.html')
 
 
 def get_spoauth_uri():
