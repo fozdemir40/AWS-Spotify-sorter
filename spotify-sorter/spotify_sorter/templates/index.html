@@ -13,7 +13,7 @@
         <a href="{{ a_url }}">Login</a>
     {% endif %}
 
-    {% if results %}
+    {% if results['items'] %}
 
         <div class="liked-songs-container">
             {% for result in results["items"] %}
