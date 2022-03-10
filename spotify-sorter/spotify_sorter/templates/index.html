@@ -5,12 +5,15 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@200;400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename= 'css/style.css') }}">
     <title>Spotify sorter</title>
 </head>
 <body>
     {% if a_url %}
-        <a href="{{ a_url }}">Login</a>
+        <a class="spotify-button" href="{{ a_url }}">Login</a>
     {% endif %}
 
     {% if results['items'] %}
@@ -19,23 +22,26 @@
             {% for result in results["items"] %}
                 <div class="track-container">
                     <div class="track-image"><img src="{{ result['track']['album']['images'][2]['url'] }}" alt="Album image"></div>
-                    <div class="track-title"><p>{{ result['track']['name'] }}</p></div>
-                    <div class="track-artist"><p>{{ result['track']['artists'][0]['name'] }}</p></div>
+                    <div class="track-info">
+                        <div class="track-title"><p>{{ result['track']['name'] }}</p></div>
+                        <div class="track-artist"><p>{{ result['track']['artists'][0]['name'] }}</p></div>
+                    </div>
+
                 </div>
             {% endfor %}
         {% if leftover_tracks >= 1 %}
-            <p>And {{ leftover_tracks }} tracks more...</p>
+            <p class="leftover">And {{ leftover_tracks }} tracks more...</p>
         {% endif %}
         </div>
         <div class="process-button-container">
             <form action="/processing" method="POST">
                 <input type="hidden" name="track_id_list" value="{{ track_ids }}">
-                <button class="process-btn" type="submit">Process</button>
+                <button class="process-btn" class="spotify-button" type="submit">Process</button>
             </form>
         </div>
 
     {% else %}
-        <p>No songs in your liked playlist</p>
+        <p class="no-songs">No songs in your liked playlist...</p>
     {% endif %}
 </body>
 </html>

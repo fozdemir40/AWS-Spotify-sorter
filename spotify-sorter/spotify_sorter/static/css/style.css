@@ -1,0 +1,70 @@
+body{
+    margin: 0; padding: 80px;
+    background-color: #191414;
+}
+
+.track-container{
+    display: flex;
+    margin-top: 40px
+
+}
+
+.track-info{
+    margin-left: 10px;
+}
+
+.track-container .track-title p{
+    margin: 0;
+    font-family: 'Work Sans', sans-serif;
+    font-weight: bold;
+    font-size: 20px;
+    color: #ffffff;
+}
+
+.track-artist p{
+    margin: 5px 0 0 0;
+    font-family: 'Work Sans', sans-serif;
+    font-weight: 200;
+    font-size: 13px;
+    color: #ffffff;
+}
+
+form{
+    margin-top: 90px;
+}
+
+form button{
+    background-color: #1DB954;
+    color: #191414;
+    font-family: 'Work Sans', sans-serif;
+    font-weight: bold;
+    border: none;
+    border-radius: 15px;
+    font-size: 15px;
+    padding: 10px;
+    cursor: pointer;
+}
+
+.spotify-button{
+    background-color: #1DB954;
+    color: #191414;
+    font-family: 'Work Sans', sans-serif;
+    font-weight: bold;
+    border: none;
+    border-radius: 15px;
+    font-size: 15px;
+    padding: 10px;
+}
+
+.leftover{
+    font-family: 'Work Sans', sans-serif;
+    font-weight: 200;
+    font-size: 13px;
+}
+
+.no-songs{
+    font-family: 'Work Sans', sans-serif;
+    font-weight: bold;
+    font-size: 20px;
+    color: #ffffff;
+}
